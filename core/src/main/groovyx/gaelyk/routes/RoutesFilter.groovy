@@ -30,9 +30,6 @@ import groovyx.gaelyk.cache.CacheHandler
 import groovyx.gaelyk.logging.GroovyLogger
 import groovyx.gaelyk.GaelykCategory
 
-import com.google.appengine.api.utils.SystemProperty
-import com.google.appengine.api.NamespaceManager
-
 import org.codehaus.groovy.control.CompilerConfiguration
 
 /**
@@ -110,7 +107,7 @@ class RoutesFilter implements Filter {
      */
     void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         // reload the routes in local dev mode in case the routes definition has changed since the last request
-        if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development) {
+        if (System.getProperty("environment")?.equalsIgnoreCase("Development")) {
             loadRoutes()
         }
 
@@ -132,9 +129,10 @@ class RoutesFilter implements Filter {
                     }
                     if (route.redirectionType == RedirectionType.FORWARD) {
                         if (route.namespace) {
-                            GaelykCategory.of(NamespaceManager, result.namespace) {
+                            // TODO replace namespace system
+                            //GaelykCategory.of(NamespaceManager, result.namespace) {
                                 CacheHandler.serve(route, request, response)
-                            }
+                            //}
                         } else {
                             CacheHandler.serve(route, request, response)
                         }

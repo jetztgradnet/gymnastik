@@ -15,9 +15,6 @@
  */
 package groovyx.gaelyk.routes
 
-import com.google.appengine.api.capabilities.Capability
-import com.google.appengine.api.capabilities.CapabilityStatus
-
 /**
  * Route destination which is aware of the GAE capabilities and their status.
  *
@@ -28,9 +25,9 @@ class CapabilityAwareDestination {
 
     String destination
 
-    Capability capability
+    String capability
     CapabilityComparisonOperator comparison
-    CapabilityStatus status
+    String status
 
     /**
      * @return true if this sub-rule is the main route (not dependent on any capability status)
@@ -47,7 +44,7 @@ class CapabilityAwareDestination {
      * @param status a CapabilityStatus instance
      * @return a CapabilityAwareDestination instance
      */
-    CapabilityAwareDestination is(CapabilityStatus status) {
+    CapabilityAwareDestination is(String status) {
         this.status = status
         this.comparison = CapabilityComparisonOperator.IS
         return this
@@ -58,7 +55,7 @@ class CapabilityAwareDestination {
      * @param status a CapabilityStatus instance
      * @return a CapabilityAwareDestination instance
      */
-    CapabilityAwareDestination not(CapabilityStatus status) {
+    CapabilityAwareDestination not(String status) {
         this.status = status
         this.comparison = CapabilityComparisonOperator.NOT
         return this

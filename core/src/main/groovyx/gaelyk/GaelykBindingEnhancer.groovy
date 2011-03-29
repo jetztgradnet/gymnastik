@@ -15,22 +15,7 @@
  */
 package groovyx.gaelyk
 
-import com.google.appengine.api.NamespaceManager
-import com.google.appengine.api.blobstore.BlobstoreServiceFactory
-import com.google.appengine.api.capabilities.CapabilitiesServiceFactory
-import com.google.appengine.api.datastore.DatastoreServiceFactory
-import com.google.appengine.api.taskqueue.QueueFactory
-import com.google.appengine.api.mail.MailServiceFactory
-import com.google.appengine.api.memcache.MemcacheServiceFactory
-import com.google.appengine.api.oauth.OAuthServiceFactory
-import com.google.appengine.api.urlfetch.URLFetchServiceFactory
-import com.google.appengine.api.users.UserService
-import com.google.appengine.api.users.UserServiceFactory
-import com.google.appengine.api.utils.SystemProperty
-import com.google.appengine.api.xmpp.XMPPServiceFactory
-
 import groovyx.gaelyk.logging.LoggerAccessor
-import com.google.appengine.api.channel.ChannelServiceFactory
 
 /**
  * Class responsible for adding adding Google App Engine related services into the binding of Groovlets and Templates.
@@ -47,57 +32,24 @@ class GaelykBindingEnhancer {
      * @param binding Binding in which to bind the GAE services and variables
      */
     static void bind(Binding binding) {
-        // bind google app engine services
-        binding.setVariable("datastore", DatastoreServiceFactory.datastoreService)
-        binding.setVariable("memcache", MemcacheServiceFactory.memcacheService)
-        binding.setVariable("urlFetch", URLFetchServiceFactory.URLFetchService)
-        binding.setVariable("mail", MailServiceFactory.mailService)
-        binding.setVariable("images", ImagesServiceWrapper.instance)
-        
-        // bind user service and current user
-        UserService userService = UserServiceFactory.userService
-        binding.setVariable("users", userService)
-        binding.setVariable("user", userService.getCurrentUser())
-
-        // New in GAE SDK 1.2.5: task queues
-        binding.setVariable("defaultQueue", QueueFactory.defaultQueue)
-        binding.setVariable("queues", new QueueAccessor())
-
-        // New in GAE SDK 1.2.5: XMPP support
-        binding.setVariable("xmpp", XMPPServiceFactory.XMPPService)
-
         // Tells whether the application is running in local development mode
         // or is deployed on Google's cloud
-        binding.setVariable("localMode", SystemProperty.environment.value() == SystemProperty.Environment.Value.Development)
-
-        // New in GAE SDK 1.3.0: blobstore support
-        binding.setVariable("blobstore", BlobstoreServiceFactory.blobstoreService)
+        binding.setVariable("localMode", System.getProperty("environment")?.equalsIgnoreCase("Development"))
 
         // Since GAE SDK 1.3.3.1: special system properties
         binding.setVariable("app", [
                 env: [
-                        name: SystemProperty.environment.value(),
-                        version: SystemProperty.version.get(),
+                        name: System.getProperty("environment"),
+                        version: System.getProperty("version"),
                 ],
                 gaelyk: [
                         version: '0.6.1'
                 ],
-                id: SystemProperty.applicationId.get(),
-                version: SystemProperty.applicationVersion.get()
+                id: System.getProperty("applicationId"),
+                version: System.getProperty("applicationVersion")
         ])
 
         // Add a logger variable to easily access any logger
         binding.setVariable("logger", new LoggerAccessor())
-
-        binding.setVariable("oauth", OAuthServiceFactory.OAuthService)
-
-        // Namespace added in SDK 1.3.7
-        binding.setVariable("namespace", NamespaceManager)
-
-        // Capabilities service to know the status of the various GAE services
-        binding.setVariable("capabilities", CapabilitiesServiceFactory.capabilitiesService)
-
-        // Channel service in SDK 1.4.0 for Comet-style applications
-        binding.setVariable("channel", ChannelServiceFactory.channelService)
     }
 }

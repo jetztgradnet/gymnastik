@@ -17,8 +17,6 @@ package groovyx.gaelyk.cache
 
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
-import com.google.appengine.api.memcache.MemcacheServiceFactory
-import com.google.appengine.api.memcache.Expiration
 import java.text.SimpleDateFormat
 import groovyx.gaelyk.routes.Route
 import groovyx.gaelyk.logging.GroovyLogger
@@ -41,7 +39,7 @@ class CacheHandler {
     private static final GroovyLogger log = new GroovyLogger("gaelyk.cache")
 
     static Set clearCacheForUri(String uri) {
-        MemcacheServiceFactory.memcacheService.deleteAll([
+        getMemcacheService()?.deleteAll([
                 "content-for-$uri".toString(), "content-type-for-$uri".toString(), "last-modified-$uri".toString()
         ])
     }
@@ -59,7 +57,7 @@ class CacheHandler {
         if (route.cacheExpiration > 0) {
             log.config "Route cacheable"
 
-            def memcache = MemcacheServiceFactory.memcacheService
+            def memcache = getMemcacheService()
 
             def ifModifiedSince = request.getHeader("If-Modified-Since")
             // if an "If-Modified-Since" header is present in the incoming requestion
@@ -68,7 +66,7 @@ class CacheHandler {
 
                 def sinceDate = httpDateFormat.parse(ifModifiedSince)
                 String lastModifiedKey = "last-modified-$uri"
-                String lastModifiedString = memcache.get(lastModifiedKey)
+                String lastModifiedString = memcache?.get(lastModifiedKey)
                 if (lastModifiedString && httpDateFormat?.parse(lastModifiedString).before(sinceDate)) {
                     log.config "Sending NOT_MODIFIED"
 
@@ -92,10 +90,10 @@ class CacheHandler {
         String typeKey = "content-type-for-$uri"
         String lastModifiedKey = "last-modified-$uri"
 
-        def memcache = MemcacheServiceFactory.memcacheService
+        def memcache = getMemcacheService()
 
-        def content = memcache.get(contentKey)
-        def type = memcache.get(typeKey)
+        def content = memcache?.get(contentKey)
+        def type = memcache?.get(typeKey)
 
         // the resource is still present in the cache
         if (content && type) {
@@ -115,7 +113,7 @@ class CacheHandler {
             response.addHeader "Last-Modified", lastModifiedString
             response.addHeader "Expires", httpDateFormat.format(new Date(now.time + cacheExpiration * 1000))
             //response.addHeader "ETag", "\"\""
-            def duration = Expiration.byDeltaSeconds(cacheExpiration)
+            def duration = null // TODO replace: Expiration.byDeltaSeconds(cacheExpiration)
 
             log.config "Wrapping a response for caching and forwarding to resource to be cached"
             def cachedResponse = new CachedResponse(response)
@@ -125,9 +123,9 @@ class CacheHandler {
             log.config "Byte array of wrapped response will be put in memcache: ${new String(byteArray)}"
 
             // put the output in memcache
-            memcache.put(contentKey, byteArray, duration)
-            memcache.put(typeKey, cachedResponse.contentType, duration)
-            memcache.put(lastModifiedKey, lastModifiedString, duration)
+            memcache?.put(contentKey, byteArray, duration)
+            memcache?.put(typeKey, cachedResponse.contentType, duration)
+            memcache?.put(lastModifiedKey, lastModifiedString, duration)
 
             log.config "Serving content-type and byte array"
 

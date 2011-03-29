@@ -15,9 +15,6 @@
  */
 package groovyx.gaelyk.routes
 
-import com.google.appengine.api.capabilities.CapabilitiesServiceFactory
-import com.google.appengine.api.capabilities.Capability
-import com.google.appengine.api.capabilities.CapabilitiesService
 import groovyx.gaelyk.logging.GroovyLogger
 
 /**
@@ -41,7 +38,7 @@ class RoutingRule {
      */
     List<CapabilityAwareDestination> destinations
 
-    CapabilitiesService service = CapabilitiesServiceFactory.capabilitiesService
+    def service = null
 
     /**
      * @return the final destination, according to the routing rules and the availability of the various services
@@ -49,9 +46,9 @@ class RoutingRule {
     String getFinalDestination() {
         CapabilityAwareDestination alternate = destinations.find { CapabilityAwareDestination dest ->
             if (dest.comparison == CapabilityAwareDestination.CapabilityComparisonOperator.IS) {
-                service.getStatus(dest.capability).getStatus() == dest.status
+                service?.getStatus(dest.capability).getStatus() == dest.status
             } else if(dest.comparison == CapabilityAwareDestination.CapabilityComparisonOperator.NOT) {
-                service.getStatus(dest.capability).getStatus() != dest.status
+                service?.getStatus(dest.capability).getStatus() != dest.status
             }
         }
 
@@ -70,7 +67,7 @@ class RoutingRule {
                 to: { String dest ->
                     def csd = new CapabilityAwareDestination(destination: dest)
                     alternativeDestinations << csd
-                    [on: { Capability c ->
+                    [on: { String c ->
                         csd.capability = c
                         return csd
                     }]
