@@ -4,12 +4,12 @@ sourceCompatibility = 1.5
 targetCompatibility = 1.5
 defaultTasks 'clean', 'build'
 
-// current Gaelyk version
+// current Gymnastik version
 version = '0.6.1'
 
 // various directory places and file names
 tmpProj = "../template-project"
-zipName = "${buildDir}/gaelyk-template-project-${version}.zip"
+zipName = "${buildDir}/gymnastik-template-project-${version}.zip"
 projLib = "${tmpProj}/war/WEB-INF/lib"
 
 website = "../website"
@@ -33,10 +33,11 @@ sourceSets {
 dependencies {
     groovy fileTree(dir: 'lib', includes: ['groovy-all-1.7.6.jar'])
     compile fileTree(dir: 'lib', includes: ['*.jar'])
+    compile "javax.mail:com.springsource.javax.mail:1.4.1"
 }
 
 jar {
-    baseName = 'gaelyk'
+    baseName = 'gymnastik'
     manifest {
         attributes 'Implementation-Title': 'Gaelyk', 'Implementation-Version': version
     }
@@ -55,13 +56,13 @@ groovydoc {
 
 task template << {
     description = "Packaging the template project"
-    println "Deleting old Gaelyk JARs from the template project"
+    println "Deleting old Gymnastik JARs from the template project"
 
     ant.delete {
-        fileset dir: projLib, includes: "gaelyk-*.jar"
+        fileset dir: projLib, includes: "gymnastik-*.jar"
     }
 
-    println "Copying the latest Gaelyk JAR in the template project"
+    println "Copying the latest Gymnastik JAR in the template project"
     ant.copy file: jar.archivePath, todir: projLib
 
     println "Creating the template project ZIP file"
@@ -69,11 +70,11 @@ task template << {
 }
 
 task dist(dependsOn: [groovydoc, template]) << {
-    description = "Updating the Gaelyk JAR of the website"
+    description = "Updating the Gymnastik JAR of the website"
     println description
 
     ant.delete {
-        fileset dir: websiteLib, includes: "gaelyk-*.jar"
+        fileset dir: websiteLib, includes: "gymnastik-*.jar"
     }
   
     ant.copy file: jar.archivePath, todir: websiteLib
