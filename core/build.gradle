@@ -31,9 +31,12 @@ sourceSets {
 }
 
 dependencies {
-    groovy fileTree(dir: 'lib', includes: ['groovy-all-1.7.6.jar'])
+    repositories {
+        mavenCentral()
+    }
+	groovy fileTree(dir: 'lib', includes: ['groovy-all-1.7.6.jar'])
     compile fileTree(dir: 'lib', includes: ['*.jar'])
-    compile "javax.mail:com.springsource.javax.mail:1.4.1"
+    compile "javax.mail:mail:1.4.1"
 }
 
 jar {
